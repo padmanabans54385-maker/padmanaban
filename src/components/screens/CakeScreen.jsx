@@ -1,114 +1,87 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
-import confetti from "canvas-confetti"
-import GradientButton from "../GradientButton"
-import { ArrowRight, Flame, WandSparkles } from "lucide-react"
+import { useState } from "react";
+import { motion } from "framer-motion";
 
-const confettiColors = ["#FF3CAC", "#F687B3", "#D8B4FE", "#C084FC", "#F472B6"];
-
-export default function CakeScreen({ onNext, onDecorate }) {
-  const [decorated, setDecorated] = useState(false)
-  const [lit, setLit] = useState(false)
-
-  const decorate = () => {
-    if (decorated) return
-    setDecorated(true)
-    setTimeout(() => {
-      onDecorate()
-    }, 500);
-  }
-
-  const lightCandle = () => {
-    if (lit) return
-    setLit(true)
-    setTimeout(() => burst(), 500);
-    setTimeout(() => burst(), 1000);
-  }
-
-  const burst = () => {
-    confetti({
-      particleCount: 140,
-      spread: 90,
-      origin: { y: 0.6 },
-      colors: confettiColors,
-    })
-  }
+export default function CakePage({ onNext }) {
+  const [stage, setStage] = useState("light");
 
   return (
-    <div className="px-4 md:px-6 py-10 text-center relative">
-      {lit && (
-        <motion.div className="fixed top-50 lg:top-60 left-0 w-full text-center text-[40px] md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 drop-shadow leading-tight px-4"
-          style={{ filter: "drop-shadow(0 0 20px rgba(255,105,180,0.4))" }}
-          initial={{ opacity: 0, scale: 0.8, }}
-          animate={{ opacity: 1, scale: 1, }}
-          transition={{ duration: 1, ease: "easeOut", delay: 1.5 }}
+    <div className="h-screen w-full flex flex-col items-center justify-start bg-[#0a0a1a] text-white overflow-hidden relative">
+
+      {/* Bunting Flags */}
+      <motion.img
+        src="/bunting.png"   // <-- replace with your path
+        alt="bunting"
+        className="w-full max-w-3xl mt-5"
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+      />
+
+      {/* Container */}
+      <div className="flex flex-col items-center justify-center mt-10">
+
+        {/* Title = Only show after candle is lit */}
+        {stage === "birthday" && (
+          <motion.h1
+            className="text-4xl md:text-5xl font-bold text-center mb-4"
+            style={{ color: "#ff99d4", textShadow: "0 0 20px #ff4ba3" }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            Happy Birthday, Cutiepiee!
+          </motion.h1>
+        )}
+
+        {/* Cake */}
+        <motion.div
+          initial={{ scale: 0.6, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6, type: "spring" }}
         >
-          Happy Birthday, Cutiepie!
+          <img
+            src="/cake.png"   // <-- replace
+            alt="cake"
+            className="w-64 h-auto drop-shadow-2xl"
+          />
         </motion.div>
-      )}
 
-      <div className="relative flex flex-col items-center gap-8 mt-52">
-        <div className="relative mb-6">
-          <Cake lit={lit} />
-        </div>
-        <AnimatePresence mode="wait">
-          {!lit ? (
-            <motion.div
-              key="light"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1, transition: { duration: 0.5, delay: 0.5 } }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            >
-              <GradientButton onClick={lightCandle}>
-                <Flame size={20} />
-                Light the Candle
-              </GradientButton>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="next"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1, transition: { duration: 0.5, delay: 2 } }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            >
-              <GradientButton onClick={onNext}>
-                Next
-                <ArrowRight size={20} className="mt-0.5" />
-              </GradientButton>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div >
-  )
-}
-
-function Cake({ lit }) {
-  return (
-    <div className="flex flex-col items-center">
-      <div className="cake">
-        <div className="plate"></div>
-        <div className="layer layer-bottom"></div>
-        <div className="layer layer-middle"></div>
-        <div className="layer layer-top"></div>
-        <div className="icing"></div>
-        <div className="drip drip1"></div>
-        <div className="drip drip2"></div>
-        <div className="drip drip3"></div>
-        <div className="candle">
-          {lit && <motion.div
-            initial={{ opacity: 0, scaleY: 0.2, y: 10 }}
-            animate={{ opacity: 1, scaleY: 1, y: 0 }}
-            transition={{
-              duration: 0.9,
-              ease: [0.25, 0.1, 0.25, 1.0],
+        {/* Confetti (only on birthday) */}
+        {stage === "birthday" && (
+          <motion.div
+            className="absolute top-0 left-0 w-full h-full pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{
+              backgroundImage: "url('/confetti.gif')",
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat",
             }}
-            className="flame"></motion.div>}
-        </div>
+          />
+        )}
+
+        {/* BUTTON AREA */}
+        <motion.button
+          onClick={() => {
+            if (stage === "light") setStage("birthday");
+            else if (stage === "birthday") setStage("decorate");
+            else if (stage === "decorate" && onNext) onNext();
+          }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mt-10 px-10 py-3 rounded-full text-lg font-semibold"
+          style={{
+            background: "linear-gradient(90deg, #ff6db1, #ff3fa9)",
+            boxShadow: "0 0 20px #ff5bbb",
+          }}
+        >
+          {stage === "light" && "🔥 Light the Candle"}
+          {stage === "birthday" && "🎈 Pop the Balloons"}
+          {stage === "decorate" && "✨ Decorate"}
+        </motion.button>
       </div>
     </div>
-  )
+  );
 }
